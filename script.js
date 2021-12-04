@@ -3,7 +3,8 @@ const newProjectButton = document.querySelector('#new-project-button');
 const newProjectName = document.querySelector('#new-project-name');
 const projectList = document.querySelector('#project-list');
 const openProjectContainer = document.querySelector('#open-project-container');
-let projects = [];
+const retrievedData = localStorage.getItem("projects");
+let projects = JSON.parse(retrievedData);
 
 //constructors
 class ToDo {
@@ -23,11 +24,15 @@ class Project {
 
 //default project
 function addDefaultProject(){   
-    defaultProject = new Project('default', []);
-    projects.push(defaultProject)
-    generateProjectList(projectList, projects);
-}
-
+    if (projects.length === 0){
+        defaultProject = new Project('default', []);
+        projects.push(defaultProject)
+        localStorage.setItem("projects", JSON.stringify(projects));
+        generateProjectList(projectList, projects);
+    } else {
+        generateProjectList(projectList, projects);
+    };
+};
 addDefaultProject();
 
 
@@ -38,6 +43,7 @@ function createProject() {
     event.preventDefault();
     newProject = new Project(newProjectName.value, []);
     projects.push(newProject)
+    localStorage.setItem("projects", JSON.stringify(projects));
     generateProjectList(projectList, projects)
 };
 
@@ -69,6 +75,7 @@ function deleteProject(){
     const projectToDelete = this.parentNode.id;
     const indexOfProjectToDelete = projects.findIndex(x => x.name === projectToDelete);
     projects.splice(indexOfProjectToDelete, 1);
+    localStorage.setItem("projects", JSON.stringify(projects));
     generateProjectList(projectList, projects); 
     openProjectContainer.innerHTML='';
 };
@@ -86,6 +93,7 @@ function displayProject(e){
     const taskList = document.createElement('ol');
         taskList.setAttribute('id', 'task-list');
 
+    //create new todo input
     const addToDoForm = document.createElement('form');
         addToDoForm.setAttribute('id', 'add-to-do-input');
 
@@ -95,14 +103,9 @@ function displayProject(e){
         input.setAttribute('id', 'new-to-do-name');
         addToDoForm.appendChild(input);
 
-    const dueDate = document.createElement('input');
-        dueDate.setAttribute('type', 'date');
-        dueDate.setAttribute('placeholder', 'Due date');
-        dueDate.setAttribute('id', 'new-to-do-due-date');
-        addToDoForm.appendChild(dueDate);
-
+    //create priority input
     //create array of priority options
-    const priority = ["Low","Moderate","High","Immediate"];
+    const priority = ["Low priority","Moderate priority","High priority","Immediate priority"];
 
     //Create and append select list
     const newToDoPriority = document.createElement("select");
@@ -115,8 +118,21 @@ function displayProject(e){
         option.value = priority[i];
         option.text = priority[i];
         newToDoPriority.appendChild(option);
-    }
+    } 
 
+    //Create due date input and label
+    const dueDate = document.createElement('input');
+        dueDate.setAttribute('type', 'date');
+        dueDate.setAttribute('id', 'new-to-do-due-date');
+    
+    const dueDateLabel = document.createElement("Label");
+        dueDateLabel.setAttribute("for", dueDate);
+        dueDateLabel.innerHTML = "Due date:";
+        
+    addToDoForm.appendChild(dueDateLabel);
+    addToDoForm.appendChild(dueDate);
+
+    //create submit button
     const submitButton = document.createElement('input');
         submitButton.setAttribute('type', 'submit');
         submitButton.setAttribute('value', 'Add');
@@ -144,9 +160,9 @@ function addNewToDo(){
     const newToDoPriority = document.querySelector('#new-to-do-priority');
     newToDo = new ToDo(newToDoName.value, newToDoDueDate.value, newToDoPriority.value);
     x.tasks.push(newToDo);
+    localStorage.setItem("projects", JSON.stringify(projects));
     generateTaskList();
     form.reset();
-    console.log(projects);
 };
 
 //populate task list of selected project
@@ -164,7 +180,10 @@ function generateTaskList(){
                 const deleteTaskButton = document.createElement('button');
                     deleteTaskButton.textContent ='Delete';
                     deleteTaskButton.addEventListener('click', deleteTask, false);
-                /* newLi.addEventListener('click', openToDoDetails, false); */
+                const editTaskButton = document.createElement('button');
+                    editTaskButton.textContent ='Edit';
+                    editTaskButton.addEventListener('click', editTask, false);
+                newLi.appendChild(editTaskButton);
                 newLi.appendChild(deleteTaskButton);
                 taskList.appendChild(newLi);
             }
@@ -184,10 +203,11 @@ function deleteTask(e){
             openProject.splice(test, 1);
         } 
     }
+    localStorage.setItem("projects", JSON.stringify(projects));
     generateTaskList();
 };
 
-//show todo details and add date/priority
-/* function openToDoDetails(){
-    alert('hello');
-}; */
+//edit task
+function editTask(){
+    alert('hi');
+};
