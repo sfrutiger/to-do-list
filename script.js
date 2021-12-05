@@ -133,12 +133,12 @@ function displayProject(e){
     addToDoForm.appendChild(dueDate);
 
     //create submit button
-    const submitButton = document.createElement('input');
-        submitButton.setAttribute('type', 'submit');
-        submitButton.setAttribute('value', 'Add');
-        submitButton.setAttribute('id', 'submit-to-do');
-        submitButton.addEventListener('click', addNewToDo, false);
-        addToDoForm.appendChild(submitButton);
+    const saveChangesButton = document.createElement('input');
+        saveChangesButton.setAttribute('type', 'submit');
+        saveChangesButton.setAttribute('value', 'Add');
+        saveChangesButton.setAttribute('id', 'submit-to-do');
+        saveChangesButton.addEventListener('click', addNewToDo, false);
+        addToDoForm.appendChild(saveChangesButton);
     
     openProject.appendChild(selectedProjectTitle);
     openProject.appendChild(taskList);
@@ -175,7 +175,7 @@ function generateTaskList(){
         if (document.getElementById(test)){
             for (let element of projects[i].tasks) {
                 const newLi = document.createElement('li');
-                    newLi.textContent = element.task + '. ' + element.priority + ' priority' + ' due ' + element.dueDate;
+                    newLi.textContent = element.task + '. ' + element.priority + ', due ' + element.dueDate;
                     newLi.setAttribute('id', element.task);
                 const deleteTaskButton = document.createElement('button');
                     deleteTaskButton.textContent ='Delete';
@@ -208,6 +208,98 @@ function deleteTask(e){
 };
 
 //edit task
-function editTask(){
-    alert('hi');
+function editTask(e){
+    const openProjectID = e.target.parentNode.parentNode.parentNode.id.replace('-open','');
+    const openProjectIndex = projects.findIndex(x => x.name === openProjectID);
+    const openProject = projects[openProjectIndex].tasks;
+    const taskToEdit = e.target.parentNode;
+    const taskToEditID = e.target.parentNode.id;
+    const tasktoEditIndex = openProject.findIndex(x => x.task === taskToEditID);
+    const taskToEditName = openProject[tasktoEditIndex].task;
+    const taskToEditPriority = openProject[tasktoEditIndex].priority;
+    const taskToEditDueDate = openProject[tasktoEditIndex].dueDate;
+    taskToEdit.innerHTML = '';
+
+    //create to do edit form
+    const editToDoForm = document.createElement('form');
+        editToDoForm.setAttribute('id', 'edit-to-do-input');
+
+    const input = document.createElement('input');
+        input.setAttribute('type', 'text');
+        input.setAttribute('value', taskToEditName);
+        input.setAttribute('id', 'edited-to-do-name');
+        editToDoForm.appendChild(input);
+
+    //create priority input
+    //create array of priority options
+    const priority = ["Low priority","Moderate priority","High priority","Immediate priority"];
+
+    //Create and append select list
+    const editToDoPriority = document.createElement("select");
+        editToDoPriority.setAttribute('id', 'edited-to-do-priority')
+        editToDoForm.appendChild(editToDoPriority);
+
+    //Create and append the options
+    for (var i = 0; i < priority.length; i++) {
+        const option = document.createElement("option");
+        option.value = priority[i];
+        option.text = priority[i];
+        if (option.value === taskToEditPriority) {
+            option.selected = true;
+        } else {
+            option.selected = false;
+        }
+        editToDoPriority.appendChild(option);
+    } 
+
+    //Create due date input and label
+    const editDueDate = document.createElement('input');
+        editDueDate.setAttribute('type', 'date');
+        editDueDate.setAttribute('id', 'edited-to-do-due-date')
+        editDueDate.setAttribute('value', taskToEditDueDate);
+    
+    const dueDateLabel = document.createElement("Label");
+        dueDateLabel.setAttribute("for", editDueDate);
+        dueDateLabel.innerHTML = "Due date:";
+        
+    editToDoForm.appendChild(dueDateLabel);
+    editToDoForm.appendChild(editDueDate);
+
+    //create submit button
+    const saveChangesButton = document.createElement('input');
+        saveChangesButton.setAttribute('type', 'submit');
+        saveChangesButton.setAttribute('value', 'Save changes');
+        saveChangesButton.setAttribute('id', 'submit-to-do');
+        saveChangesButton.addEventListener('click', saveToDoEdits, false);
+        editToDoForm.appendChild(saveChangesButton);
+
+    //create discard changes button    
+    const discardChangeButton = document.createElement('button');
+        discardChangeButton.textContent ='Discard changes';
+        discardChangeButton.addEventListener('click', generateTaskList, false);
+        editToDoForm.appendChild(discardChangeButton);
+
+    //append edit form to li
+    taskToEdit.appendChild(editToDoForm);
 };
+
+function saveToDoEdits(e){
+    event.preventDefault();
+    const openProjectID = e.target.parentNode.parentNode.parentNode.parentNode.id.replace('-open','');
+    const openProjectIndex = projects.findIndex(x => x.name === openProjectID);
+    const openProject = projects[openProjectIndex].tasks;
+    const taskToEdit = e.target.parentNode.parentNode;
+    const taskToEditID = e.target.parentNode.parentNode.id;
+    const tasktoEditIndex = openProject.findIndex(x => x.task === taskToEditID);
+
+    const editedToDoName = document.querySelector('#edited-to-do-name');
+    const editedToDoDueDate = document.querySelector('#edited-to-do-due-date');
+    const editedToDoPriority = document.querySelector('#edited-to-do-priority');
+
+    openProject[tasktoEditIndex].task = editedToDoName.value;
+    openProject[tasktoEditIndex].priority = editedToDoPriority.value;
+    openProject[tasktoEditIndex].dueDate = editedToDoDueDate.value;
+
+    localStorage.setItem("projects", JSON.stringify(projects));
+    generateTaskList();
+}
