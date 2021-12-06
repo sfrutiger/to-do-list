@@ -1,5 +1,5 @@
-#project-list {
-    
+.completed {
+    text-decoration: line-through;
 }
 
 #project-list li {

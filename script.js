@@ -22,10 +22,11 @@ initializeProjects();
 
 //constructors
 class ToDo {
-    constructor(task, dueDate, priority){
+    constructor(task, dueDate, priority, completed){
         this.task = task
         this.dueDate = dueDate
         this.priority = priority
+        this.completed = completed
     }
 };
 
@@ -62,7 +63,7 @@ function createProject() {
 
 //populate list of projects
 function generateProjectList(projectList, projects) {
-    projectList.innerHTML = '';
+    projectList.textContent = '';
     form.reset();
     for (let element of projects) {
         const newLi = document.createElement('li');
@@ -90,12 +91,12 @@ function deleteProject(){
     projects.splice(indexOfProjectToDelete, 1);
     localStorage.setItem("storedProjects", JSON.stringify(projects));
     generateProjectList(projectList, projects); 
-    openProjectContainer.innerHTML='';
+    openProjectContainer.textContent='';
 };
 
 //open project to show to-dos
 function displayProject(e){
-    openProjectContainer.innerHTML = '';
+    openProjectContainer.textContent = '';
 
     const openProject = document.createElement('div');
         openProject.setAttribute('id', e.target.parentNode.id+'-open');
@@ -140,7 +141,7 @@ function displayProject(e){
     
     const dueDateLabel = document.createElement("Label");
         dueDateLabel.setAttribute("for", dueDate);
-        dueDateLabel.innerHTML = "Due date:";
+        dueDateLabel.textContent = "Due date:";
         
     addToDoForm.appendChild(dueDateLabel);
     addToDoForm.appendChild(dueDate);
@@ -171,7 +172,7 @@ function addNewToDo(){
     const newToDoName = document.querySelector('#new-to-do-name');
     const newToDoDueDate = document.querySelector('#new-to-do-due-date');
     const newToDoPriority = document.querySelector('#new-to-do-priority');
-    newToDo = new ToDo(newToDoName.value, newToDoDueDate.value, newToDoPriority.value);
+    newToDo = new ToDo(newToDoName.value, newToDoDueDate.value, newToDoPriority.value, false);
     x.tasks.push(newToDo);
     localStorage.setItem("storedProjects", JSON.stringify(projects));
     generateTaskList();
@@ -181,7 +182,7 @@ function addNewToDo(){
 //populate task list of selected project
 function generateTaskList(){
     const taskList = document.querySelector('#task-list');
-    taskList.innerHTML='';
+    taskList.textContent='';
     //loop through projects and if id of project equals id of openproject div add tasks to task list
     for (let i = 0; i < projects.length; i++) {
         const test = projects[i].name + '-open';
@@ -190,18 +191,47 @@ function generateTaskList(){
                 const newLi = document.createElement('li');
                     newLi.textContent = element.task + '. ' + element.priority + ', due ' + element.dueDate;
                     newLi.setAttribute('id', element.task);
+                const completeTaskButton = document.createElement('button');
+                    completeTaskButton.addEventListener('click', completeTask, false);
                 const deleteTaskButton = document.createElement('button');
                     deleteTaskButton.textContent ='Delete';
                     deleteTaskButton.addEventListener('click', deleteTask, false);
                 const editTaskButton = document.createElement('button');
                     editTaskButton.textContent ='Edit';
                     editTaskButton.addEventListener('click', editTask, false);
+                if (element.completed == true){
+                    newLi.setAttribute('class', 'completed');
+                    completeTaskButton.textContent ='Mark not completed';
+                } else {
+                    newLi.removeAttribute('class', 'completed');
+                    completeTaskButton.textContent ='Mark completed';
+                }
+                newLi.appendChild(completeTaskButton);
                 newLi.appendChild(editTaskButton);
                 newLi.appendChild(deleteTaskButton);
                 taskList.appendChild(newLi);
             }
         }
     }
+};
+
+//complete task
+function completeTask(e){
+    const openProjectID = e.target.parentNode.parentNode.parentNode.id.replace('-open','');
+    const openProjectIndex = projects.findIndex(x => x.name === openProjectID);
+    const openProject = projects[openProjectIndex].tasks;
+    const completeTaskButton = e.target;
+    const taskToEdit = e.target.parentNode;
+    const taskToEditID = e.target.parentNode.id;
+    const tasktoEditIndex = openProject.findIndex(x => x.task === taskToEditID);
+    openProject[tasktoEditIndex].completed = !openProject[tasktoEditIndex].completed;
+    taskToEdit.classList.toggle('completed');
+    if (completeTaskButton.textContent === "Mark completed") {
+        completeTaskButton.textContent = "Mark not completed";
+      } else {
+        completeTaskButton.textContent = "Mark completed";
+      }
+    localStorage.setItem("storedProjects", JSON.stringify(projects));
 };
 
 //delete task
@@ -231,7 +261,7 @@ function editTask(e){
     const taskToEditName = openProject[tasktoEditIndex].task;
     const taskToEditPriority = openProject[tasktoEditIndex].priority;
     const taskToEditDueDate = openProject[tasktoEditIndex].dueDate;
-    taskToEdit.innerHTML = '';
+    taskToEdit.textContent = '';
 
     //create to do edit form
     const editToDoForm = document.createElement('form');
@@ -273,7 +303,7 @@ function editTask(e){
     
     const dueDateLabel = document.createElement("Label");
         dueDateLabel.setAttribute("for", editDueDate);
-        dueDateLabel.innerHTML = "Due date:";
+        dueDateLabel.textContent = "Due date:";
         
     editToDoForm.appendChild(dueDateLabel);
     editToDoForm.appendChild(editDueDate);
