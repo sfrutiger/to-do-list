@@ -3,8 +3,22 @@ const newProjectButton = document.querySelector('#new-project-button');
 const newProjectName = document.querySelector('#new-project-name');
 const projectList = document.querySelector('#project-list');
 const openProjectContainer = document.querySelector('#open-project-container');
-const retrievedData = localStorage.getItem("projects");
-let projects = JSON.parse(retrievedData);
+const retrievedData = localStorage.getItem("storedProjects");
+let projects = '';
+
+
+//create projects array on first page load or if local storage cleared
+function initializeProjects(){
+    if (localStorage['storedProjects']){
+        projects = JSON.parse(retrievedData);
+        return projects;
+    } else {
+        console.log('no');
+        projects = [];
+        return projects;
+    };
+};
+initializeProjects();
 
 //constructors
 class ToDo {
@@ -27,14 +41,13 @@ function addDefaultProject(){
     if (projects.length === 0){
         defaultProject = new Project('default', []);
         projects.push(defaultProject)
-        localStorage.setItem("projects", JSON.stringify(projects));
+        localStorage.setItem("storedProjects", JSON.stringify(projects));
         generateProjectList(projectList, projects);
     } else {
         generateProjectList(projectList, projects);
     };
 };
 addDefaultProject();
-
 
 //add new projects
 newProjectButton.addEventListener('click', createProject, false);
@@ -43,7 +56,7 @@ function createProject() {
     event.preventDefault();
     newProject = new Project(newProjectName.value, []);
     projects.push(newProject)
-    localStorage.setItem("projects", JSON.stringify(projects));
+    localStorage.setItem("storedProjects", JSON.stringify(projects));
     generateProjectList(projectList, projects)
 };
 
@@ -75,7 +88,7 @@ function deleteProject(){
     const projectToDelete = this.parentNode.id;
     const indexOfProjectToDelete = projects.findIndex(x => x.name === projectToDelete);
     projects.splice(indexOfProjectToDelete, 1);
-    localStorage.setItem("projects", JSON.stringify(projects));
+    localStorage.setItem("storedProjects", JSON.stringify(projects));
     generateProjectList(projectList, projects); 
     openProjectContainer.innerHTML='';
 };
@@ -160,7 +173,7 @@ function addNewToDo(){
     const newToDoPriority = document.querySelector('#new-to-do-priority');
     newToDo = new ToDo(newToDoName.value, newToDoDueDate.value, newToDoPriority.value);
     x.tasks.push(newToDo);
-    localStorage.setItem("projects", JSON.stringify(projects));
+    localStorage.setItem("storedProjects", JSON.stringify(projects));
     generateTaskList();
     form.reset();
 };
@@ -203,7 +216,7 @@ function deleteTask(e){
             openProject.splice(test, 1);
         } 
     }
-    localStorage.setItem("projects", JSON.stringify(projects));
+    localStorage.setItem("storedProjects", JSON.stringify(projects));
     generateTaskList();
 };
 
@@ -300,6 +313,6 @@ function saveToDoEdits(e){
     openProject[tasktoEditIndex].priority = editedToDoPriority.value;
     openProject[tasktoEditIndex].dueDate = editedToDoDueDate.value;
 
-    localStorage.setItem("projects", JSON.stringify(projects));
+    localStorage.setItem("storedProjects", JSON.stringify(projects));
     generateTaskList();
 }
